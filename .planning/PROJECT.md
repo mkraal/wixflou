@@ -20,7 +20,7 @@ Each client can log in and immediately see only their own company's live project
 - [ ] Client can log in with email and password (Wix Members, invite-only)
 - [ ] Client sees only their linked companies' data — no access to unlinked companies
 - [ ] A member can be linked to multiple companies (sees projects from all linked companies)
-- [ ] Admin can create a new client account and link it to one or more companies without developer involvement
+- [ ] Admin can create a new client account and link it to one or more companies without developer involvement (mechanism TBD in Phase 0)
 
 **Security**
 - [ ] All data access from Wix goes through the API layer — no direct Supabase queries from Wix
@@ -84,7 +84,7 @@ Supabase / PostgreSQL (read cache — orders go directly to Caflou)
     |
 API Layer (Supabase Edge Functions / Cloudflare Workers / TBD)
     | Validates Wix member session → resolves clientId → queries Supabase
-    | Endpoints: GET /projects, GET /pricing, POST /orders (→ Caflou), GET /backups
+    | Endpoints: GET /projects, GET /pricing, POST /orders (→ Caflou), GET /backups, POST /admin/link-member (if needed)
     ^
     | HTTPS calls from Wix backend (.jsw via wix-fetch)
     |
@@ -148,7 +148,9 @@ Wix page → .jsw backend → API (with Wix session token)
 
 `memberId` resolution and query scoping happen inside the API, not in Wix backend functions. The Wix `.jsw` layer only forwards the session — it never sees database credentials or constructs data queries.
 
-**Admin onboarding:** Admin creates the Wix member, then adds one or more rows to `client_members` linking that member to their company(ies). No custom field needed on the Wix member — the mapping lives entirely in Supabase.
+**Admin onboarding:** Admin creates the Wix member, then links that member to their company(ies). The exact mechanism is a Phase 0 question:
+- **Option A (preferred):** Member-to-company relationships are managed in Caflou (contacts linked to companies). The sync service populates `client_members` automatically. Admin only works in Caflou and Wix — no extra tooling.
+- **Option B (fallback):** If Caflou doesn't expose contact-to-company relationships via API, a protected admin page in Wix calls `POST /admin/link-member` to manage `client_members` directly. Admin never touches Supabase.
 
 **Phase 0 should confirm:** whether Caflou's company records expose a stable internal ID. If yes, use that as `clientId` directly — the sync service can derive it without a lookup. If not, generate a UUID in the `clients` table.
 
@@ -161,7 +163,7 @@ Wix page → .jsw backend → API (with Wix session token)
 - **Caflou API**: Untested — tag format, pagination, rate limits, and custom attribute shape all unknown until Phase 0
 - **Drive links prerequisite**: Phase 3 is blocked until team adopts the Caflou attachment workflow
 - **Data isolation**: Enforced in the API layer — Wix never queries Supabase directly. The API validates the Wix session, resolves the member's companies via `client_members`, and scopes all queries. Database credentials (service_role key) never leave the API.
-- **Member-to-company mapping**: Managed in Supabase `client_members` table, not on the Wix member profile. Admin adds rows when onboarding.
+- **Member-to-company mapping**: Managed in Supabase `client_members` table via a protected admin page in Wix. Admin never touches Supabase directly.
 
 ## Key Decisions
 

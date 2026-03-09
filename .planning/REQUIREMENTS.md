@@ -12,7 +12,7 @@
 - [ ] **AUTH-03**: Client session persists across browser refresh
 - [ ] **AUTH-04**: Client sees only their linked companies' data (enforced by the API layer — memberId resolved server-side, company access looked up from `client_members` table, scoped on every query)
 - [ ] **AUTH-05**: Admin can create a new client account in Wix dashboard without developer involvement
-- [ ] **AUTH-06**: Admin can link a Wix member to one or more companies (add rows to `client_members` in Supabase — member sees data from all linked companies)
+- [ ] **AUTH-06**: Admin can link a Wix member to one or more companies without developer involvement (mechanism TBD in Phase 0 — Caflou-native preferred, admin page in Wix as fallback)
 
 ### Security
 

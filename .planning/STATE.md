@@ -28,6 +28,7 @@ None — project initialized, no phase started yet.
 - Phase 3 has a business-side prerequisite: team must adopt the Caflou Drive link attachment workflow
 - Orders go directly to Caflou via the API (Caflou is the source of truth for orders — no independent orders table in Supabase)
 - Multi-company access supported: one member can be linked to multiple companies via `client_members` join table
+- Member-to-company mapping mechanism is a Phase 0 question: Caflou-native (preferred) vs admin page in Wix (fallback)
 - Development is AI-assisted — estimates reflect a developer working with an AI coding agent against the detailed plans
 
 ---

@@ -70,8 +70,10 @@ When a client loads a page, the website sends their login session to the API. Th
 An admin sets this up once per client:
 
 1. Create the client's login account in Wix
-2. In the database, link that account to one or more companies
+2. Link that account to the correct company(ies) — the exact mechanism depends on what Caflou supports (see Open Questions)
 3. Ensure each company's Caflou tag is registered in the database
+
+**How the linking works is a Phase 0 question.** The preferred approach is to manage member-to-company links inside Caflou (e.g., via contacts linked to companies) and have the sync service populate the mapping automatically. If Caflou doesn't support this natively, a simple admin page in Wix would handle it instead — calling a protected API endpoint, so the admin never touches the database directly. Either way, the admin workflow stays the same: create the account, link it, done.
 
 If a company renames in Caflou, only the database company registry needs updating — the client's login and all their project rows stay intact, because they reference the stable client ID, not the tag string.
 
@@ -198,9 +200,10 @@ These should be resolved before or during Phase 0:
 | 2 | What is the exact format of Caflou tags? | Tag in database must match exactly |
 | 3 | Is pricing stored as a Caflou custom field on the company? | If no: pricing sync needs a different approach |
 | 4 | Can the API create tasks/projects in Caflou? (write capability) | Orders go directly to Caflou — must be validated in Phase 0 |
-| 5 | How many active projects exist across all clients? | Over ~200: pagination handling needed in sync service |
-| 6 | Where should the API layer be hosted? | See options below — decided during Phase 0 |
-| 7 | Which sync service should run the Caflou → database pipeline? | See options below — decided during Phase 0 |
+| 5 | Does Caflou expose contact-to-company relationships via API? | If yes: member-to-company mapping syncs automatically from Caflou (preferred). If no: a simple admin page in Wix manages the links. |
+| 6 | How many active projects exist across all clients? | Over ~200: pagination handling needed in sync service |
+| 7 | Where should the API layer be hosted? | See options below — decided during Phase 0 |
+| 8 | Which sync service should run the Caflou → database pipeline? | See options below — decided during Phase 0 |
 
 ### Sync Service Options (decided in Phase 0)
 

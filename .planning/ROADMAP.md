@@ -33,6 +33,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 8. Can the API reliably validate a Wix member session and resolve their clientId?
 9. Does the full secure chain work end-to-end: Wix login → API session validation → clientId resolution → scoped Supabase query → data returned to Wix page?
 10. Can the API create a task/project in Caflou? (Required for order submission — validates Caflou write capability)
+11. Does Caflou expose contact-to-company relationships via API? (If yes: member-to-company mapping syncs automatically — preferred. If no: build a simple admin page in Wix as fallback.)
 
 **Success criteria:**
 1. A logged-in Wix test member sees only projects belonging to their linked companies (no access to unlinked companies)
@@ -59,7 +60,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 - Production API deployment with endpoints: `GET /projects` (client-scoped)
 - Production sync service running on schedule (every 5-15 min)
 - Monitoring: sync failure alerting (email/Slack on consecutive failures), API error logging, external uptime check
-- Admin onboarding process documented: how to add a new client (create Wix member + add row to `client_members` linking member to company)
+- Admin onboarding process documented: how to add a new client (create Wix member + link to company via Caflou or admin page, depending on Phase 0 outcome)
 - Active Projects portal page with: project name, status, assigned manager, last synced timestamp
 - "Last synced at" indicator on the page
 
