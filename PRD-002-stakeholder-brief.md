@@ -196,14 +196,12 @@ These should be resolved before or during Phase 0:
 
 | # | Question | Impact |
 |---|---|---|
-| 1 | Does Caflou API support filtering projects by tag? | If no: +2–3 h in sync logic |
-| 2 | What is the exact format of Caflou tags? | Tag in database must match exactly |
-| 3 | Is pricing stored as a Caflou custom field on the company? | If no: pricing sync needs a different approach |
-| 4 | Can the API create tasks/projects in Caflou? (write capability) | Orders go directly to Caflou — must be validated in Phase 0 |
-| 5 | Does Caflou expose contact-to-company relationships via API? | If yes: member-to-company mapping syncs automatically from Caflou (preferred). If no: a simple admin page in Wix manages the links. |
-| 6 | How many active projects exist across all clients? | Over ~200: pagination handling needed in sync service |
-| 7 | Where should the API layer be hosted? | See options below — decided during Phase 0 |
-| 8 | Which sync service should run the Caflou → database pipeline? | See options below — decided during Phase 0 |
+| 1 | Are project tags accessible on the project object via Caflou API? | Tags are how we match projects to companies — must be readable |
+| 2 | Are custom attributes (pricing per page, Google Drive link) accessible via API? | Pricing and backup links depend on these fields being readable |
+| 3 | What Caflou object should an order create — a task, a project, or something else? | Depends on how the business currently tracks orders in Caflou |
+| 4 | Does Caflou expose contact-to-company relationships via API? | If yes: member-to-company mapping syncs automatically from Caflou (preferred). If no: a simple admin page in Wix manages the links. |
+| 5 | Where should the API layer be hosted? | See options below — decided during Phase 0 |
+| 6 | Which sync service should run the Caflou → database pipeline? | See options below — decided during Phase 0 |
 
 ### Sync Service Options (decided in Phase 0)
 

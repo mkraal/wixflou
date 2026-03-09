@@ -23,17 +23,14 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 - A test page that shows logged-in member's projects fetched via the Wix → API → Supabase chain
 
 **Questions this phase must answer:**
-1. Does Caflou API support tag-based filtering, or must all projects be fetched and filtered?
-2. What is the exact tag format in Caflou? (company name string, abbreviation, or code?)
-3. Are custom attributes (`custom_column_gdrive_link`, `custom_column_price_per_page`) accessible via API?
-4. What are Caflou's response times and rate limits?
-5. Does the data paginate? What is the max payload size?
-6. Which sync service fits best — Make.com (visual, handoff-friendly) or Cloud Run Jobs (code-controlled, AI-maintainable)?
-7. Which API host works best — Supabase Edge Functions, Cloudflare Workers, or another option?
-8. Can the API reliably validate a Wix member session and resolve their clientId?
-9. Does the full secure chain work end-to-end: Wix login → API session validation → clientId resolution → scoped Supabase query → data returned to Wix page?
-10. Can the API create a task/project in Caflou? (Required for order submission — validates Caflou write capability)
-11. Does Caflou expose contact-to-company relationships via API? (If yes: member-to-company mapping syncs automatically — preferred. If no: build a simple admin page in Wix as fallback.)
+1. Are project tags accessible on the project object via Caflou API? (Tags are how we match projects to companies — must be readable. Dataset is small (~50-100 customers), so no server-side filtering needed — sync fetches all and matches locally.)
+2. Are custom attributes (`custom_column_gdrive_link`, `custom_column_price_per_page`) accessible via API? (Pricing and backup links depend on these.)
+3. What Caflou object should an order create — a task, a project, or something else? (Depends on how the business currently tracks orders in Caflou.)
+4. Does Caflou expose contact-to-company relationships via API? (If yes: member-to-company mapping syncs automatically — preferred. If no: build a simple admin page in Wix as fallback.)
+5. Which sync service fits best — Make.com (visual, handoff-friendly) or Cloud Run Jobs (code-controlled, AI-maintainable)?
+6. Which API host works best — Supabase Edge Functions, Cloudflare Workers, or another option?
+7. Can the API reliably validate a Wix member session and resolve their clientId?
+8. Does the full secure chain work end-to-end: Wix login → API session validation → clientId resolution → scoped Supabase query → data returned to Wix page?
 
 **Success criteria:**
 1. A logged-in Wix test member sees only projects belonging to their linked companies (no access to unlinked companies)
