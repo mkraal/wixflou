@@ -17,7 +17,7 @@
 ### Security
 
 - [ ] **SEC-01**: All portal data access goes through the API layer — Wix frontend and `.jsw` backend never query Supabase directly
-- [ ] **SEC-02**: API validates the Wix member session server-side before processing any request
+- [ ] **SEC-02**: API authenticates every request server-side before processing — either by verifying a Wix OAuth token or by validating a shared API key from the `.jsw` backend (mechanism determined in Phase 0)
 - [ ] **SEC-03**: Database credentials (`service_role` key) are stored only in the API layer — never in Wix code, environment variables, or frontend
 - [ ] **SEC-04**: API enforces `client_id IN (member's linked companies)` scoping on every data query as defense in depth — even if application logic has a bug, the API will not return data from unlinked companies
 

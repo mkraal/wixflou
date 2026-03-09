@@ -10,9 +10,11 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 
 **Goal:** Confirm the entire technical approach works before writing production code. Answer every open question that affects scope and architecture. Prove the secure data flow end-to-end: Caflou → Supabase → API → Wix.
 
-**Requirements:** AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, SEC-01, SEC-02, SEC-03, SEC-04, SYNC-01, SYNC-02, SYNC-03, SYNC-04, SYNC-05, SYNC-06
+**Requirements (validated):** AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, SEC-01, SEC-02, SEC-03, SEC-04, SYNC-01, SYNC-02, SYNC-03, SYNC-04, SYNC-05, SYNC-06
 
-**Estimate:** 11–17 h
+*Phase 0 validates feasibility of these requirements through the proof-of-concept. Full production delivery (hardened deployment, documented admin workflows, resilience testing) happens in Phase 1.*
+
+**Estimate:** 17–27 h
 
 **What gets built:**
 - Wix dev site with Velo enabled and a test member login
@@ -21,6 +23,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 - Sync proof-of-concept (Make.com scenario or Cloud Run Job) that pulls projects from Caflou and writes them to Supabase
 - Wix backend `.jsw` functions that call the API (not Supabase directly)
 - A test page that shows logged-in member's projects fetched via the Wix → API → Supabase chain
+- Auth mechanism validation: investigate Wix OAuth tokens vs shared API key for securing `.jsw` → API calls
 
 **Questions this phase must answer:**
 1. Are project tags accessible on the project object via Caflou API? (Tags are how we match projects to companies — must be readable. Dataset is small (~50-100 customers), so no server-side filtering needed — sync fetches all and matches locally.)
@@ -29,13 +32,13 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 4. Does Caflou expose contact-to-company relationships via API? (If yes: member-to-company mapping syncs automatically — preferred. If no: build a simple admin page in Wix as fallback.)
 5. Which sync service fits best — Make.com (visual, handoff-friendly) or Cloud Run Jobs (code-controlled, AI-maintainable)?
 6. Which API host works best — Supabase Edge Functions, Cloudflare Workers, or another option?
-7. Can the API reliably validate a Wix member session and resolve their clientId?
-8. Does the full secure chain work end-to-end: Wix login → API session validation → clientId resolution → scoped Supabase query → data returned to Wix page?
+7. How should the API authenticate requests from Wix? (Does Wix support OAuth tokens that an external API can verify independently? If not, a shared API key authenticates the `.jsw` backend and the API trusts the memberId it passes. OAuth is preferred — shared key is acceptable but makes the key's secrecy the security boundary.)
+8. Does the full secure chain work end-to-end: Wix login → `.jsw` resolves memberId → API authenticates request → clientId resolution → scoped Supabase query → data returned to Wix page?
 
 **Success criteria:**
 1. A logged-in Wix test member sees only projects belonging to their linked companies (no access to unlinked companies)
 2. Data flows through the API layer — Wix never queries Supabase directly
-3. API validates the Wix session server-side before returning any data
+3. API authenticates requests from the `.jsw` backend before returning any data (auth mechanism documented)
 4. A project update in Caflou appears in the test portal within 15 minutes
 5. All open questions above are documented with confirmed answers
 6. Sync service and API host are chosen and documented
@@ -49,7 +52,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 
 **Requirements:** PROJ-01, PROJ-02, PROJ-03, PROJ-04, MON-01, MON-02, MON-03
 
-**Estimate:** 14–24 h
+**Estimate:** 18–28 h
 
 **What gets built:**
 - Production Wix member area (invite-only, manual approval)
@@ -60,6 +63,8 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 - Admin onboarding process documented: how to add a new client (create Wix member + link to company via Caflou or admin page, depending on Phase 0 outcome)
 - Active Projects portal page with: project name, status, assigned manager, last synced timestamp
 - "Last synced at" indicator on the page
+
+**Contingency:** If Phase 0 determines that Caflou does not support contact-to-company mapping (Question 4), this phase includes building a protected admin page in Wix for member-company linking (~2–4 h, absorbed within the estimate range).
 
 **Dependencies:** Phase 0 must be complete. All open questions resolved.
 
@@ -82,7 +87,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 
 **Requirements:** ORD-01, ORD-02, ORD-03, ORD-04, ORD-05, ORD-06, ORD-07
 
-**Estimate:** 7–12 h
+**Estimate:** 7–13 h
 
 **What gets built:**
 - API endpoints: `GET /pricing` (client-scoped rate lookup), `POST /orders` (validates, looks up rate server-side, creates task/project in Caflou)
@@ -110,7 +115,7 @@ Estimates assume AI-assisted development — a developer working with an AI codi
 
 **Requirements:** BACK-01, BACK-02, BACK-03
 
-**Estimate:** 5–8 h
+**Estimate:** 6–10 h
 
 **What gets built:**
 - Drive links synced from Caflou `custom_column_gdrive_link` attribute (should already be in `projects` table from Phase 0 sync)

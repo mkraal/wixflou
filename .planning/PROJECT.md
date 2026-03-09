@@ -24,7 +24,7 @@ Each client can log in and immediately see only their own company's live project
 
 **Security**
 - [ ] All data access from Wix goes through the API layer — no direct Supabase queries from Wix
-- [ ] API validates Wix member session server-side before returning data
+- [ ] API authenticates every request server-side before processing — either by verifying a Wix OAuth token or by validating a shared API key from the `.jsw` backend (mechanism determined in Phase 0)
 - [ ] Database credentials (service_role key) never leave the API layer
 - [ ] API enforces client_id scoping on every query — defense in depth beyond application logic
 
@@ -139,14 +139,18 @@ All monitoring uses free-tier tooling at this project's scale.
 
 On every page load:
 ```
-Wix page → .jsw backend → API (with Wix session token)
-    API validates session with Wix → gets memberId
+Wix page → .jsw backend → API (with auth credential + memberId)
+    .jsw resolves memberId via wix-members-backend (server-side, trusted)
+    .jsw calls API with memberId + auth credential (OAuth token or shared API key — determined in Phase 0)
+    API verifies the auth credential → trusts the memberId
     API looks up clientIds from client_members WHERE member_id = ?
     API queries Supabase WHERE client_id IN (...) (using service_role key)
     API returns only that member's companies' data
 ```
 
-`memberId` resolution and query scoping happen inside the API, not in Wix backend functions. The Wix `.jsw` layer only forwards the session — it never sees database credentials or constructs data queries.
+`memberId` resolution happens in the `.jsw` layer (server-side, using Wix's built-in session). Query scoping happens in the API. The `.jsw` layer never sees database credentials or constructs data queries. The API never sees the Wix session directly — it trusts the memberId because the request is authenticated via the auth credential.
+
+**Auth mechanism — Phase 0 must determine:** Wix may support OAuth tokens that the API can verify independently (preferred — each request carries a verifiable token). If not, a shared API key authenticates the `.jsw` backend as a trusted caller. The shared-key approach is secure (`.jsw` runs server-side on Wix infrastructure, key stored in Wix Secrets Manager) but means the API key's secrecy is the security boundary — if the key leaks, the API cannot distinguish legitimate from illegitimate callers.
 
 **Admin onboarding:** Admin creates the Wix member, then links that member to their company(ies). The exact mechanism is a Phase 0 question:
 - **Option A (preferred):** Member-to-company relationships are managed in Caflou (contacts linked to companies). The sync service populates `client_members` automatically. Admin only works in Caflou and Wix — no extra tooling.
@@ -162,8 +166,8 @@ Wix page → .jsw backend → API (with Wix session token)
 - **Wix limitations**: 14s backend timeout (mitigated by external sync), hourly scheduled jobs on standard plan (mitigated by external sync service)
 - **Caflou API**: Untested — tag format, pagination, rate limits, and custom attribute shape all unknown until Phase 0
 - **Drive links prerequisite**: Phase 3 is blocked until team adopts the Caflou attachment workflow
-- **Data isolation**: Enforced in the API layer — Wix never queries Supabase directly. The API validates the Wix session, resolves the member's companies via `client_members`, and scopes all queries. Database credentials (service_role key) never leave the API.
-- **Member-to-company mapping**: Managed in Supabase `client_members` table via a protected admin page in Wix. Admin never touches Supabase directly.
+- **Data isolation**: Enforced in the API layer — Wix never queries Supabase directly. The API authenticates every request (via OAuth token or shared API key — determined in Phase 0), resolves the member's companies via `client_members`, and scopes all queries. Database credentials (service_role key) never leave the API.
+- **Member-to-company mapping**: Managed in Supabase `client_members` table. Mechanism TBD in Phase 0 — Caflou-native sync preferred, protected admin page in Wix as fallback. Admin never touches Supabase directly.
 
 ## Key Decisions
 
@@ -178,6 +182,7 @@ Wix page → .jsw backend → API (with Wix session token)
 | Polling over webhooks | 5-15 min freshness is sufficient. Webhooks add endpoint management and reconciliation complexity. Add later if needed. | — Pending |
 | Invite-only access | Admin controls who gets in. No self-registration. Reduces spam and ensures identity mapping is always set up before login. | — Pending |
 | AI-assisted development | Developer + AI coding agent against detailed plans. Cuts scaffolding/boilerplate time significantly. Main bottleneck is Caflou API exploration and production testing, not code generation. | Active |
+| Wix-to-API auth mechanism | OAuth tokens (verifiable per-request) preferred over shared API key (single secret as security boundary). Shared key is acceptable — `.jsw` is server-side, key in Wix Secrets Manager — but OAuth is stronger if available. | — Pending (determine in Phase 0) |
 
 ---
 *Initialized: 2026-03-08*

@@ -103,12 +103,13 @@ Estimates assume a developer working with an AI coding agent. The AI handles mos
 | Task | Estimate |
 |---|---|
 | Set up Wix development site with Velo | 1–2 h |
-| Test Caflou API: auth, project listing, tag format, custom fields, pagination, task creation (write) | 3–5 h |
+| Test Caflou API: auth, project listing, tag format, custom fields, pagination, task creation (write) | 5–8 h |
 | Set up database and deploy API proof-of-concept | 2–3 h |
-| Build a sync proof-of-concept (Caflou → database → API → Wix test page) | 3–4 h |
-| Verify the full identity chain: logged-in client → API → their projects only | 1–2 h |
-| Document all findings and choose the sync service and API host | 1 h |
-| **Total** | **11–17 h** |
+| Build a sync proof-of-concept (Caflou → database → API → Wix test page) | 4–6 h |
+| Verify the full identity chain and auth mechanism: Wix login → API authentication (investigate OAuth tokens vs shared API key) → client-scoped data only | 3–4 h |
+| Document all findings and choose the sync service and API host | 1–2 h |
+| Buffer for unknown API quirks and Wix Velo constraints | 1–2 h |
+| **Total** | **17–27 h** |
 
 **Output:** A working proof-of-concept where a test client logs in and sees only their own projects, with data flowing through the secure API layer. All open technical questions answered. Sync service and API host chosen. Phase 1 estimates can be tightened after this.
 
@@ -124,15 +125,17 @@ Estimates assume a developer working with an AI coding agent. The AI handles mos
 |---|---|
 | Production Wix member area (invite-only login, manual approval) | 2–3 h |
 | Production database schema and data security setup | 1–2 h |
-| Production API deployment with session validation and client-scoped endpoints | 2–3 h |
-| Production sync service running on schedule (every 5–15 min) | 2–4 h |
+| Production API deployment with session validation and client-scoped endpoints | 3–4 h |
+| Production sync service running on schedule (every 5–15 min) | 3–5 h |
 | Active Projects page (project name, status, manager, last synced time) | 3–5 h |
-| Basic monitoring setup (sync health, API errors, uptime check) | 1–2 h |
+| Basic monitoring setup (sync health, API errors, uptime check) | 2–3 h |
 | Admin onboarding guide (how to add a new client without a developer) | 1–2 h |
-| Testing with real client data (including cross-client isolation verification) | 2–3 h |
-| **Total** | **14–24 h** |
+| Testing with real client data (including cross-client isolation verification) | 3–4 h |
+| **Total** | **18–28 h** |
 
 **Output:** Clients can log in and see their projects. Business user can onboard new clients independently following the written guide. Data refreshes automatically. All data access goes through the secure API. Basic monitoring alerts on sync failures and API errors.
+
+**Contingency:** If Phase 0 determines that Caflou does not support contact-to-company mapping (Open Question 4), this phase includes building a protected admin page in Wix for member-company linking (~2–4 h, absorbed within the estimate range).
 
 ---
 
@@ -142,11 +145,11 @@ Estimates assume a developer working with an AI coding agent. The AI handles mos
 
 | Task | Estimate |
 |---|---|
-| Order API endpoint (server-side validation, rate lookup, Caflou task creation) | 2–3 h |
+| Order API endpoint (server-side validation, rate lookup, Caflou task creation) | 2–4 h |
 | Order form page (auto-fill, page count input, live price display) | 2–4 h |
 | Error handling (Caflou unreachable → clear error, client retries) | 1–2 h |
-| Testing (including pricing isolation between clients) | 1–2 h |
-| **Total** | **6–11 h** |
+| Testing (including pricing isolation between clients) | 2–3 h |
+| **Total** | **7–13 h** |
 
 **Output:** Clients can submit orders. The form knows who they are and what their rate is. Orders are validated by the API and created directly in Caflou — keeping Caflou as the single source of truth. If Caflou is temporarily unreachable, the client sees an error and can retry.
 
@@ -160,9 +163,9 @@ Estimates assume a developer working with an AI coding agent. The AI handles mos
 |---|---|
 | Drive links section on the projects page | 1–2 h |
 | Handling projects with no Drive link (placeholder, not an error) | 0.5–1 h |
-| Admin and technical documentation | 2–3 h |
+| Admin and technical documentation | 3–4 h |
 | Handoff walkthrough with business user | 1–2 h |
-| **Total** | **5–8 h** |
+| **Total** | **6–10 h** |
 
 **Output:** Clients see their Drive links next to each project. Business user has full documentation to manage the portal and onboard new clients independently.
 
@@ -174,11 +177,11 @@ Estimates assume a developer working with an AI coding agent. The AI handles mos
 
 | Phase | Low | High |
 |---|---|---|
-| Phase 0 — Spike | 11 h | 17 h |
-| Phase 1 — Active Projects | 14 h | 24 h |
-| Phase 2 — Orders | 6 h | 11 h |
-| Phase 3 — Backups + Handoff | 5 h | 8 h |
-| **Total** | **36 h** | **60 h** |
+| Phase 0 — Spike | 17 h | 27 h |
+| Phase 1 — Active Projects | 18 h | 28 h |
+| Phase 2 — Orders | 7 h | 13 h |
+| Phase 3 — Backups + Handoff | 6 h | 10 h |
+| **Total** | **48 h** | **78 h** |
 
 The low end assumes: Caflou API supports tag filtering and task creation directly, tags are consistent, simple page design, Drive links already in use.
 
@@ -200,6 +203,7 @@ These should be resolved before or during Phase 0:
 | 4 | Does Caflou expose contact-to-company relationships via API? | If yes: member-to-company mapping syncs automatically from Caflou (preferred). If no: a simple admin page in Wix manages the links. |
 | 5 | Where should the API layer be hosted? | See options below — decided during Phase 0 |
 | 6 | Which sync service should run the Caflou → database pipeline? | See options below — decided during Phase 0 |
+| 7 | How should the API authenticate requests from Wix? | Wix doesn't expose a public session-validation endpoint for external services. If Wix supports OAuth tokens that the API can verify independently, that's preferred. Otherwise, a shared API key authenticates the `.jsw` backend and the API trusts the memberId it passes. The shared-key approach is secure (`.jsw` is server-side, key stored in Wix Secrets Manager) but means the API key's secrecy is the security boundary. |
 
 ### Sync Service Options (decided in Phase 0)
 
@@ -256,4 +260,4 @@ Developer maintenance is as-needed — sync logic, API endpoints, and Wix Velo c
 
 ## Recommended Next Step
 
-**Approve Phase 0 (Spike).** 11–17 hours of work answers all the critical questions: Does Caflou's tag filtering work? What do the tags look like? How does the pricing field work? Which API host fits best? The output is a working proof-of-concept with data flowing securely from Caflou through the API to a Wix page. After Phase 0, estimates for the remaining phases can be confirmed with much higher confidence.
+**Approve Phase 0 (Spike).** 17–27 hours of work answers all the critical questions: Does Caflou's tag filtering work? What do the tags look like? How does the pricing field work? Which API host fits best? How should the API authenticate requests from Wix? The output is a working proof-of-concept with data flowing securely from Caflou through the API to a Wix page. After Phase 0, estimates for the remaining phases can be confirmed with much higher confidence.
