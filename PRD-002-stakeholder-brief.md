@@ -75,8 +75,6 @@ An admin sets this up once per client:
 
 **How the linking works is a Phase 0 question.** The preferred approach is to manage member-to-company links inside Caflou (e.g., via contacts linked to companies) and have the sync service populate the mapping automatically. If Caflou doesn't support this natively, a simple admin page in Wix would handle it instead — calling a protected API endpoint, so the admin never touches the database directly. Either way, the admin workflow stays the same: create the account, link it, done.
 
-If a company renames in Caflou, only the database company registry needs updating — the client's login and all their project rows stay intact, because they reference the stable client ID, not the tag string.
-
 ---
 
 ## What Needs to Be in Place Before Development Starts
